@@ -136,11 +136,15 @@ const App: React.FC = () => {
         }}
         onClick={() => {
           if (dragMovedRef.current) return;
+          if (apiKeySaved && imageApiKeySaved) {
+            setIsKeyModalOpen(false);
+            return;
+          }
           setIsKeyModalOpen(true);
         }}
         style={{ left: fabPos.x, top: fabPos.y }}
         className="fixed z-20 bg-white/80 backdrop-blur-md border border-white/50 rounded-full w-9 h-9 shadow-lg text-slate-600 flex items-center justify-center cursor-grab active:cursor-grabbing touch-none"
-        title="Edit API Keys"
+        title="API Keys"
       >
         <span className="material-symbols-outlined text-base">key</span>
       </button>
