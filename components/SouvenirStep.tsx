@@ -13,6 +13,7 @@ const SouvenirStep: React.FC<SouvenirStepProps> = ({ session }) => {
   const [postcardImage, setPostcardImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [imageFailed, setImageFailed] = useState(false);
+  const [avatarLoadFailed, setAvatarLoadFailed] = useState(false);
   const HILTON_LOGO = "https://www.hilton.com/modules/assets/svgs/logos/WW.svg";
   const hasFetchedRef = useRef(false);
   const hasRetriedRef = useRef(false);
@@ -26,6 +27,10 @@ const SouvenirStep: React.FC<SouvenirStepProps> = ({ session }) => {
       img.src = src;
     });
   };
+
+  useEffect(() => {
+    setAvatarLoadFailed(false);
+  }, [session.generatedAvatar]);
 
   const fetchPostcardImage = async (force?: boolean) => {
     const image = await generatePostcardImage(
@@ -286,8 +291,16 @@ const SouvenirStep: React.FC<SouvenirStepProps> = ({ session }) => {
                                      {/* Avatar Bottom Right */}
                                      <div className="relative group/avatar">
                                          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full border-[3px] border-white/90 shadow-2xl overflow-hidden bg-white/20 backdrop-blur-md transition-transform group-hover/avatar:scale-110 flex items-center justify-center text-white text-xs font-bold">
-                                             {session.generatedAvatar ? (
-                                               <img src={session.generatedAvatar} alt="Me" className="w-full h-full object-cover" crossOrigin="anonymous" />
+                                             {session.generatedAvatar && !avatarLoadFailed ? (
+                                               <img
+                                                 src={session.generatedAvatar}
+                                                 alt="Me"
+                                                 className="w-full h-full object-cover"
+                                                 onError={(e) => {
+                                                   e.currentTarget.style.display = 'none';
+                                                   setAvatarLoadFailed(true);
+                                                 }}
+                                               />
                                              ) : (
                                                <span>{session.booking.firstName?.[0] || 'H'}</span>
                                              )}
