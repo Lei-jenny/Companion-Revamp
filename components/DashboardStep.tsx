@@ -368,7 +368,7 @@ const DashboardStep: React.FC<DashboardStepProps> = ({ session }) => {
   }
 
   return (
-    <div className="relative w-full max-w-[480px] h-full sm:h-[90vh] bg-white sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden ring-1 ring-white/10 animate-fade-in font-display hilton-outline">
+    <div className="relative w-full max-w-[480px] h-[100dvh] sm:h-[90vh] bg-white sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden ring-1 ring-white/10 animate-fade-in font-display hilton-outline">
       {/* Header */}
       <header className="absolute top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 bg-white/95 backdrop-blur-xl border-b border-light-gray hilton-glass">
         <div className="flex items-center gap-3">
@@ -670,7 +670,7 @@ const DashboardStep: React.FC<DashboardStepProps> = ({ session }) => {
 
       {/* Chat Modal - Styled */}
       {isChatOpen && (
-          <div className="absolute inset-0 z-50 flex flex-col bg-background-light animate-fade-in">
+          <div className="fixed inset-0 z-50 flex flex-col bg-background-light animate-fade-in pt-[env(safe-area-inset-top)]">
               <div className="flex items-center justify-between p-4 bg-white/90 backdrop-blur border-b border-gray-100">
                   <div className="flex items-center gap-3">
                        <div className="w-8 h-8 rounded-full bg-slate-900 flex items-center justify-center text-white">
@@ -715,7 +715,7 @@ const DashboardStep: React.FC<DashboardStepProps> = ({ session }) => {
                   )}
                   <div ref={chatEndRef}></div>
               </div>
-              <form onSubmit={handleChatSubmit} className="p-4 bg-white border-t border-gray-100">
+              <form onSubmit={handleChatSubmit} className="p-4 bg-white border-t border-gray-100 pb-[env(safe-area-inset-bottom)]">
                   <div className="relative">
                       <input 
                         type="text" 
