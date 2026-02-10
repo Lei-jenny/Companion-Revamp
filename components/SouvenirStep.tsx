@@ -56,29 +56,43 @@ const SouvenirStep: React.FC<SouvenirStepProps> = ({ session }) => {
         const failedFlag = localStorage.getItem(failedKey);
         if (cachedCaption) setCaption(cachedCaption);
         if (cachedImage) {
-            setPostcardImage(cachedImage);
-            setImageFailed(false);
-        }
-        if (failedFlag && !cachedImage) setImageFailed(true);
-        if (cachedCaption || cachedImage || failedFlag) {
-            setLoading(false);
-            if (failedFlag && !cachedImage && !hasRetriedRef.current) {
-              hasRetriedRef.current = true;
-              const refreshed = await fetchPostcardImage();
-              if (refreshed) {
-                setPostcardImage(refreshed);
-                setImageFailed(false);
-                localStorage.removeItem(failedKey);
-                await setImageCache(imageKey, refreshed);
-              }
-            }
-            return;
+          setPostcardImage(cachedImage);
+          setImageFailed(false);
+          setLoading(false);
+          return;
         }
 
-        const text = await generateSouvenirCaption(session.booking.location, session.travelStyle);
-        setCaption(text);
-        localStorage.setItem(captionKey, text);
-        setImageFailed(true);
+        if (failedFlag) {
+          setImageFailed(true);
+          setLoading(false);
+          if (!hasRetriedRef.current) {
+            hasRetriedRef.current = true;
+            const refreshed = await fetchPostcardImage();
+            if (refreshed) {
+              setPostcardImage(refreshed);
+              setImageFailed(false);
+              localStorage.removeItem(failedKey);
+              await setImageCache(imageKey, refreshed);
+            }
+          }
+          return;
+        }
+
+        if (!cachedCaption) {
+          const text = await generateSouvenirCaption(session.booking.location, session.travelStyle);
+          setCaption(text);
+          localStorage.setItem(captionKey, text);
+        }
+
+        const image = await fetchPostcardImage();
+        if (image) {
+          setPostcardImage(image);
+          setImageFailed(false);
+          await setImageCache(imageKey, image);
+        } else {
+          setImageFailed(true);
+          localStorage.setItem(failedKey, '1');
+        }
         setLoading(false);
     };
     fetchContent();
@@ -168,7 +182,7 @@ const SouvenirStep: React.FC<SouvenirStepProps> = ({ session }) => {
         <main className="flex-1 flex flex-col items-center justify-center px-6 relative z-20 w-full no-scrollbar overflow-y-auto pb-20">
             
             {/* Full Image Card */}
-            <div className="relative w-[300px] h-[420px] sm:w-[340px] sm:h-[480px] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] rotate-[-2deg] transform-gpu mx-auto animate-float transition-all hover:scale-[1.02] hover:rotate-0 hover:z-50 duration-500 group rounded-[2rem] overflow-hidden bg-gray-900 ring-4 ring-white">
+            <div className="relative w-[280px] sm:w-[320px] aspect-[9/16] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] rotate-[-2deg] transform-gpu mx-auto animate-float transition-all hover:scale-[1.02] hover:rotate-0 hover:z-50 duration-500 group rounded-[2rem] overflow-hidden bg-gray-900 ring-4 ring-white">
                 
                 {loading ? (
                     <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-50 text-gray-400 z-20">
@@ -200,7 +214,7 @@ const SouvenirStep: React.FC<SouvenirStepProps> = ({ session }) => {
                         <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60 opacity-80"></div>
                         
                         {/* Content Layer */}
-                        <div className="absolute inset-0 p-8 flex flex-col justify-between z-10">
+                            <div className="absolute inset-0 p-8 flex flex-col justify-between z-10 pb-10">
                             
                             {/* Top: Badges */}
                             <div className="flex justify-between items-start">
@@ -237,13 +251,13 @@ const SouvenirStep: React.FC<SouvenirStepProps> = ({ session }) => {
                                 {/* Signature & Avatar Row */}
                                 <div className="flex items-end justify-between pt-2 pb-1">
                                      {/* Signature Bottom Left */}
-                                     <span className="font-cursive text-5xl sm:text-6xl text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)] -rotate-6 translate-y-3 origin-left opacity-90">
+                                     <span className="font-cursive text-4xl sm:text-6xl text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)] -rotate-6 translate-y-1 sm:translate-y-3 origin-left opacity-90">
                                          {session.booking.firstName}
                                      </span>
              
                                      {/* Avatar Bottom Right */}
                                      <div className="relative group/avatar">
-                                         <div className="w-14 h-14 rounded-full border-[3px] border-white/90 shadow-2xl overflow-hidden bg-white/20 backdrop-blur-md transition-transform group-hover/avatar:scale-110">
+                                         <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full border-[3px] border-white/90 shadow-2xl overflow-hidden bg-white/20 backdrop-blur-md transition-transform group-hover/avatar:scale-110">
                                              <img src={session.generatedAvatar} alt="Me" className="w-full h-full object-cover" />
                                          </div>
                                      </div>
