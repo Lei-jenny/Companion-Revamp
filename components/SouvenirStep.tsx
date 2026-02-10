@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import html2canvas from 'html2canvas';
 import { UserSession } from '../types';
 import { generateSouvenirCaption, generatePostcardImage, fetchFallbackImageForQuery } from '../services/geminiService';
 import { getImageCache, setImageCache } from '../services/cacheService';
@@ -15,6 +16,7 @@ const SouvenirStep: React.FC<SouvenirStepProps> = ({ session }) => {
   const HILTON_LOGO = "https://www.hilton.com/modules/assets/svgs/logos/WW.svg";
   const hasFetchedRef = useRef(false);
   const hasRetriedRef = useRef(false);
+  const cardRef = useRef<HTMLDivElement | null>(null);
 
   const validateImage = (src: string): Promise<boolean> => {
     return new Promise((resolve) => {
@@ -126,9 +128,32 @@ const SouvenirStep: React.FC<SouvenirStepProps> = ({ session }) => {
     }
   };
 
-  const handleSavePhoto = () => {
+  const handleSavePhoto = async () => {
     const imageUrl = postcardImage || session.booking.backgroundImage;
     if (!imageUrl) return;
+    const target = cardRef.current;
+
+    if (target) {
+      try {
+        const canvas = await html2canvas(target, {
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: null,
+          scale: 2
+        });
+        const dataUrl = canvas.toDataURL('image/png');
+        const link = document.createElement('a');
+        link.href = dataUrl;
+        link.download = `hilton-postcard-${session.booking.orderId}.png`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        return;
+      } catch (error) {
+        console.warn('Postcard export failed, falling back to image only:', error);
+      }
+    }
+
     const link = document.createElement('a');
     link.href = imageUrl;
     link.download = `hilton-postcard-${session.booking.orderId}.png`;
@@ -182,7 +207,10 @@ const SouvenirStep: React.FC<SouvenirStepProps> = ({ session }) => {
         <main className="flex-1 flex flex-col items-center justify-center px-6 relative z-20 w-full no-scrollbar overflow-y-auto pb-20">
             
             {/* Full Image Card */}
-            <div className="relative w-[320px] h-[568px] sm:w-[360px] sm:h-[640px] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] rotate-[-2deg] transform-gpu mx-auto animate-float transition-all hover:scale-[1.02] hover:rotate-0 hover:z-50 duration-500 group rounded-[2rem] overflow-hidden bg-gray-900 ring-4 ring-white">
+            <div
+              ref={cardRef}
+              className="relative w-[320px] h-[568px] sm:w-[360px] sm:h-[640px] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] rotate-[-2deg] transform-gpu mx-auto animate-float transition-all hover:scale-[1.02] hover:rotate-0 hover:z-50 duration-500 group rounded-[2rem] overflow-hidden bg-gray-900 ring-4 ring-white"
+            >
                 
                 {loading ? (
                     <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-50 text-gray-400 z-20">
@@ -225,7 +253,7 @@ const SouvenirStep: React.FC<SouvenirStepProps> = ({ session }) => {
                                    </span>
                                 </div>
                                 <div className="px-3 py-1.5 bg-white/10 backdrop-blur-md rounded-full border border-white/20 shadow-lg">
-                                   <span className="text-[10px] font-bold text-white uppercase tracking-wider">
+                                   <span className="text-[8px] sm:text-[9px] font-bold text-white uppercase tracking-wider">
                                       AI Generated
                                    </span>
                                 </div>
@@ -258,7 +286,7 @@ const SouvenirStep: React.FC<SouvenirStepProps> = ({ session }) => {
                                      {/* Avatar Bottom Right */}
                                      <div className="relative group/avatar">
                                          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full border-[3px] border-white/90 shadow-2xl overflow-hidden bg-white/20 backdrop-blur-md transition-transform group-hover/avatar:scale-110">
-                                             <img src={session.generatedAvatar} alt="Me" className="w-full h-full object-cover" />
+                                             <img src={session.generatedAvatar} alt="Me" className="w-full h-full object-cover" crossOrigin="anonymous" />
                                          </div>
                                      </div>
                                 </div>
