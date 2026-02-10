@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import LoginStep from './components/LoginStep';
 import DashboardStep from './components/DashboardStep';
 import SouvenirStep from './components/SouvenirStep';
@@ -12,6 +12,58 @@ const App: React.FC = () => {
   const [apiKeySaved, setApiKeySaved] = useState(false);
   const [imageApiKeySaved, setImageApiKeySaved] = useState(false);
   const [isKeyModalOpen, setIsKeyModalOpen] = useState(false);
+  const [fabPos, setFabPos] = useState({ x: 16, y: 16 });
+  const dragOffsetRef = useRef({ x: 0, y: 0 });
+  const draggingRef = useRef(false);
+  const dragMovedRef = useRef(false);
+
+  useEffect(() => {
+    const storedFab = localStorage.getItem('API_KEY_FAB_POS');
+    if (storedFab) {
+      try {
+        const parsed = JSON.parse(storedFab);
+        if (typeof parsed?.x === 'number' && typeof parsed?.y === 'number') {
+          setFabPos({ x: parsed.x, y: parsed.y });
+        }
+      } catch {
+        // ignore parse errors
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    const handleMove = (e: PointerEvent) => {
+      if (!draggingRef.current) return;
+      dragMovedRef.current = true;
+      const nextX = e.clientX - dragOffsetRef.current.x;
+      const nextY = e.clientY - dragOffsetRef.current.y;
+      const maxX = window.innerWidth - 48;
+      const maxY = window.innerHeight - 48;
+      setFabPos({
+        x: Math.min(Math.max(8, nextX), Math.max(8, maxX)),
+        y: Math.min(Math.max(8, nextY), Math.max(8, maxY))
+      });
+    };
+
+    const handleUp = () => {
+      if (!draggingRef.current) return;
+      draggingRef.current = false;
+      const maxX = window.innerWidth - 48;
+      const maxY = window.innerHeight - 48;
+      const snapX = fabPos.x + 24 < window.innerWidth / 2 ? 8 : Math.max(8, maxX);
+      const snapY = Math.min(Math.max(8, fabPos.y), Math.max(8, maxY));
+      const snapped = { x: snapX, y: snapY };
+      setFabPos(snapped);
+      localStorage.setItem('API_KEY_FAB_POS', JSON.stringify(snapped));
+    };
+
+    window.addEventListener('pointermove', handleMove);
+    window.addEventListener('pointerup', handleUp);
+    return () => {
+      window.removeEventListener('pointermove', handleMove);
+      window.removeEventListener('pointerup', handleUp);
+    };
+  }, [fabPos]);
 
   useEffect(() => {
     const stored = localStorage.getItem('GEMINI_API_KEY') || '';
@@ -76,8 +128,18 @@ const App: React.FC = () => {
       {renderStep()}
 
       <button
-        onClick={() => setIsKeyModalOpen(true)}
-        className="absolute bottom-4 right-4 z-20 bg-white/80 backdrop-blur-md border border-white/50 rounded-full w-9 h-9 shadow-lg text-slate-600 flex items-center justify-center"
+        onPointerDown={(e) => {
+          const rect = e.currentTarget.getBoundingClientRect();
+          dragOffsetRef.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+          draggingRef.current = true;
+          dragMovedRef.current = false;
+        }}
+        onClick={() => {
+          if (dragMovedRef.current) return;
+          setIsKeyModalOpen(true);
+        }}
+        style={{ left: fabPos.x, top: fabPos.y }}
+        className="fixed z-20 bg-white/80 backdrop-blur-md border border-white/50 rounded-full w-9 h-9 shadow-lg text-slate-600 flex items-center justify-center cursor-grab active:cursor-grabbing touch-none"
         title="Edit API Keys"
       >
         <span className="material-symbols-outlined text-base">key</span>
