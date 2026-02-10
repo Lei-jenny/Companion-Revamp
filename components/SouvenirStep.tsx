@@ -246,14 +246,14 @@ const SouvenirStep: React.FC<SouvenirStepProps> = ({ session }) => {
                             
                             {/* Top: Badges */}
                             <div className="flex justify-between items-start">
-                                <div className="px-3 py-1.5 bg-black/20 backdrop-blur-md rounded-full border border-white/10 shadow-lg">
-                                   <span className="text-[10px] font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-                                      <span className="material-symbols-outlined text-[12px] text-gold">star</span>
+                                <div className="min-w-[110px] px-3 py-1 bg-black/20 backdrop-blur-md rounded-full border border-white/10 shadow-lg flex items-center justify-center text-center">
+                                   <span className="text-[8px] sm:text-[9px] font-bold text-white uppercase tracking-wider flex items-center gap-1.5 leading-none">
+                                      <span className="material-symbols-outlined text-[11px] text-gold">star</span>
                                       {session.travelStyle} Trip
                                    </span>
                                 </div>
-                                <div className="px-3 py-1.5 bg-white/10 backdrop-blur-md rounded-full border border-white/20 shadow-lg">
-                                   <span className="text-[8px] sm:text-[9px] font-bold text-white uppercase tracking-wider">
+                                <div className="min-w-[110px] px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/20 shadow-lg flex items-center justify-center text-center">
+                                   <span className="text-[8px] sm:text-[9px] font-bold text-white uppercase tracking-wider leading-none">
                                       AI Generated
                                    </span>
                                 </div>
@@ -285,8 +285,12 @@ const SouvenirStep: React.FC<SouvenirStepProps> = ({ session }) => {
              
                                      {/* Avatar Bottom Right */}
                                      <div className="relative group/avatar">
-                                         <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full border-[3px] border-white/90 shadow-2xl overflow-hidden bg-white/20 backdrop-blur-md transition-transform group-hover/avatar:scale-110">
-                                             <img src={session.generatedAvatar} alt="Me" className="w-full h-full object-cover" crossOrigin="anonymous" />
+                                         <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full border-[3px] border-white/90 shadow-2xl overflow-hidden bg-white/20 backdrop-blur-md transition-transform group-hover/avatar:scale-110 flex items-center justify-center text-white text-xs font-bold">
+                                             {session.generatedAvatar ? (
+                                               <img src={session.generatedAvatar} alt="Me" className="w-full h-full object-cover" crossOrigin="anonymous" />
+                                             ) : (
+                                               <span>{session.booking.firstName?.[0] || 'H'}</span>
+                                             )}
                                          </div>
                                      </div>
                                 </div>
