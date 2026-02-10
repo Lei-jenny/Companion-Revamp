@@ -18,6 +18,13 @@ const SouvenirStep: React.FC<SouvenirStepProps> = ({ session }) => {
   const hasFetchedRef = useRef(false);
   const hasRetriedRef = useRef(false);
   const cardRef = useRef<HTMLDivElement | null>(null);
+  const rawAvatar = session.generatedAvatar || '';
+  const avatarSrc = rawAvatar &&
+    !rawAvatar.startsWith('data:') &&
+    !rawAvatar.startsWith('blob:') &&
+    !rawAvatar.includes('images.weserv.nl')
+    ? `https://images.weserv.nl/?url=${encodeURIComponent(rawAvatar)}`
+    : rawAvatar;
 
   const validateImage = (src: string): Promise<boolean> => {
     return new Promise((resolve) => {
@@ -30,7 +37,7 @@ const SouvenirStep: React.FC<SouvenirStepProps> = ({ session }) => {
 
   useEffect(() => {
     setAvatarLoadFailed(false);
-  }, [session.generatedAvatar]);
+  }, [avatarSrc]);
 
   const fetchPostcardImage = async (force?: boolean) => {
     const image = await generatePostcardImage(
@@ -251,13 +258,13 @@ const SouvenirStep: React.FC<SouvenirStepProps> = ({ session }) => {
                             
                             {/* Top: Badges */}
                             <div className="flex justify-between items-start">
-                                <div className="min-w-[110px] px-3 py-1 bg-black/20 backdrop-blur-md rounded-full border border-white/10 shadow-lg flex items-center justify-center text-center">
+                                <div className="min-w-[110px] h-6 px-3 bg-black/20 backdrop-blur-md rounded-full border border-white/10 shadow-lg flex items-center justify-center text-center">
                                    <span className="text-[8px] sm:text-[9px] font-bold text-white uppercase tracking-wider flex items-center gap-1.5 leading-none">
                                       <span className="material-symbols-outlined text-[11px] text-gold">star</span>
                                       {session.travelStyle} Trip
                                    </span>
                                 </div>
-                                <div className="min-w-[110px] px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/20 shadow-lg flex items-center justify-center text-center">
+                                <div className="min-w-[110px] h-6 px-3 bg-white/10 backdrop-blur-md rounded-full border border-white/20 shadow-lg flex items-center justify-center text-center">
                                    <span className="text-[8px] sm:text-[9px] font-bold text-white uppercase tracking-wider leading-none">
                                       AI Generated
                                    </span>
@@ -291,11 +298,12 @@ const SouvenirStep: React.FC<SouvenirStepProps> = ({ session }) => {
                                      {/* Avatar Bottom Right */}
                                      <div className="relative group/avatar">
                                          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full border-[3px] border-white/90 shadow-2xl overflow-hidden bg-white/20 backdrop-blur-md transition-transform group-hover/avatar:scale-110 flex items-center justify-center text-white text-xs font-bold">
-                                             {session.generatedAvatar && !avatarLoadFailed ? (
+                                             {avatarSrc && !avatarLoadFailed ? (
                                                <img
-                                                 src={session.generatedAvatar}
+                                                 src={avatarSrc}
                                                  alt="Me"
                                                  className="w-full h-full object-cover"
+                                                 crossOrigin="anonymous"
                                                  onError={(e) => {
                                                    e.currentTarget.style.display = 'none';
                                                    setAvatarLoadFailed(true);
