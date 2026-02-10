@@ -68,17 +68,23 @@ const App: React.FC = () => {
   useEffect(() => {
     const stored = localStorage.getItem('GEMINI_API_KEY') || '';
     const storedImage = localStorage.getItem('IMAGE_API_KEY') || '';
-    if (stored) {
-      setApiKeyInput(stored);
+    const env = (import.meta as any).env || {};
+    const envGemini = env.VITE_GEMINI_API_KEY || '';
+    const envImage = env.VITE_IMAGE_API_KEY || '';
+    const geminiKey = stored || envGemini;
+    const imageKey = storedImage || envImage;
+
+    if (geminiKey) {
+      setApiKeyInput(geminiKey);
       setApiKeySaved(true);
-      setGeminiApiKey(stored);
+      setGeminiApiKey(geminiKey);
     }
-    if (storedImage) {
-      setImageApiKeyInput(storedImage);
+    if (imageKey) {
+      setImageApiKeyInput(imageKey);
       setImageApiKeySaved(true);
-      setImageApiKey(storedImage);
+      setImageApiKey(imageKey);
     }
-    if (!stored || !storedImage) {
+    if (!geminiKey || !imageKey) {
       setIsKeyModalOpen(true);
     }
   }, []);
